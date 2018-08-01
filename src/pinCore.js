@@ -38,9 +38,28 @@ class PinCore {
      * @param obj
      * @returns {*}
      */
-    resourceResponse(obj){
-       var response = JSON.parse(obj);
-       return response.resource_response;
+    resourceResponse(obj) {
+        /**
+         * @param {{resource_response:string}} response
+         */
+        var response = JSON.parse(obj);
+        return response.resource_response;
+
+    }
+
+    /**
+     *
+     * @param obj
+     * @returns {*}
+     */
+    getResource(obj) {
+
+        /**
+         * @param {{response:string}} response
+         */
+        var response = JSON.parse(obj);
+        return response.resource;
+
 
     }
 

@@ -16,50 +16,20 @@ class Board extends PinCore {
         this._isLoggedIn = true;
     }
 
-    /**
-     *
-     * @param url
-     * @param description
-     * @param media
-     * @returns {Promise<void>}
-     */
-    async getNewCSRFForPinning(url, description, media) {
 
-        //this.log('_getNewCSRFForPinning');
+    header() {
+        return {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': this._csrfToken,
+            'X-NEW-APP': '1',
+            'Origin': 'https://www.pinterest.com',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
+            'Referer': 'https://www.pinterest.com',
+            'Accept-Language': 'en-US,en;q=0.8'
+        };
+    };
 
-
-        await  rp({
-            method: 'GET',
-            url: 'https://www.pinterest.com/pin/create/button/?url=' + url + '&description=' + description + '&media=' + media,
-            headers: {
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Referer': 'https://www.pinterest.com/login/',
-                'Accept-Encoding': 'gzip,deflate,sdch',
-                'Accept-Language': 'en-US,en;q=0.8'
-            },
-            jar: this._cookieJar,
-            resolveWithFullResponse: true
-
-        }).promise().bind(this).then(function (response) {
-            this.log('SUCCESS: _getNewCSRFForPinning');
-            var cookies = this._cookieJar.getCookieString('https://www.pinterest.com');
-
-            var matches = cookies.match(/csrftoken=([a-zA-Z0-9]+);/);
-            if (matches && matches[1]) {
-                this._csrfToken = matches[1];
-            } else {
-                // Error!
-                this.log('couldn\'t extract csrf token from cookies: _getNewCSRFForPinning');
-                new Error('Unable to get pinning CSRF Token');
-                return;
-            }
-
-            this.log('NEW CSRF:' + this._csrfToken);
-        }).catch(function (err) {
-            console.log("Caught! Board getNewCSRFForPinning: ", err.statusCode);
-        });
-
-    } //_getNewCSRFForPinning
     /**
      *
      * @param params
@@ -132,7 +102,6 @@ class Board extends PinCore {
         if (!this._isLoggedIn) {
             await this.auth();
         }
-
         this.log('sendInvite');
 
         let payload = {"options": {"board_id": "313422524006965473", "invited_user_ids": ["494340634006530268"]}, "context": {}};
@@ -187,68 +156,139 @@ class Board extends PinCore {
 
     /**
      *
-     * @returns {Promise<void>}
+     * @param board_id
+     * @param page
+     * @returns {Promise<Array>}
      */
-    async invitesFor(board_id) {
+    async invitesFor(board_id, page = 1) {
 
+        var limit = page * 20;
         if (!this._isLoggedIn) {
             await this.auth();
         }
         this.log('invitesFor');
 
-        var payload = {"options": {"board_id": "313422524006965473", "field_set_key": "boardEdit", "status_filters": "new,accepted,contact_request_not_approved", "sort": "viewer_first", "include_inactive": true}, "context": {}};
 
-        await  rp({
-            method: 'POST',
-            url: 'https://www.pinterest.com/resource/BoardInvitesResource/get/',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': this._csrfToken,
-                'X-NEW-APP': '1',
-                'Origin': 'https://www.pinterest.com',
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
-                'Referer': 'https://www.pinterest.com',
-                'Accept-Language': 'en-US,en;q=0.8'
-            },
-            //gzip: true,
-            form: {
-                source_url: '',
-                data: JSON.stringify(payload)
-            },
-            jar: this._cookieJar,
-            resolveWithFullResponse: true
-
-        }).promise().bind(this).then(function (response) {
-
-            let res =  this.resourceResponse(response.body);
-
-            console.log("response ", res.data);
+        var result    = [];
+        var response;
+        var length    = 0;
+        var bookmarks = [];
 
 
-            this.log('SUCCESS: invitesFor');
-        }).catch(function (err) {
-            var response = JSON.parse(err.response.body);
-            if (err.statusCode == 429) {
-                console.log("invitesFor Spamm!!!");
-                if (err.response.body != null) {
-                    console.log("spam message : ", this.resourceResponse(response));
+        while (limit > length || page == 0) {
+
+
+            var payload = {
+                "options":
+                    {
+                        "bookmarks": bookmarks,
+                        "board_id": "313422524006965473",
+                        "field_set_key": "boardEdit",
+                        "status_filters": "new,accepted,contact_request_not_approved",
+                        "sort": "viewer_first",
+                        "include_inactive": true
+                    },
+                "context": {}
+            };
+
+            response = await  rp({
+                method: 'POST',
+                url: 'https://www.pinterest.com/resource/BoardInvitesResource/get/',
+                headers: this.header(),
+                //gzip: true,
+                form: {
+                    source_url: '',
+                    data: JSON.stringify(payload)
+                },
+                jar: this._cookieJar,
+                resolveWithFullResponse: true
+
+            }).promise().bind(this).then(function (response) {
+
+                this.log('SUCCESS: invitesFor');
+
+                var body = JSON.parse(response.body);
+
+
+                /**
+                 * @param {{resource_response:string}} body
+                 *  @param {{bookmarks:array}} body
+                 */
+                var data  = body.resource_response.data;
+                bookmarks = body.resource.options.bookmarks;
+                length += data.length;
+
+                return data;
+
+            }).catch(function (err) {
+                var response = JSON.parse(err.response.body);
+                if (err.statusCode == 429) {
+                    console.log("invitesFor Spamm!!!");
+                    if (err.response.body != null) {
+                        console.log("spam message : ", this.resourceResponse(response));
+                    }
+                }
+                else if (err.statusCode == 403) {
+                    console.log("Warning invitesFor");
+                    if (err.response.body != null) {
+                        console.log("Warning message : ", this.resourceResponse(response));
+                    }
+                }
+                else {
+                    console.log("Caught! Board invitesFor ", err);
+                }
+            });
+            if (response.length === 0) {
+                this.log('response length: ' + response.length);
+                break;
+            }
+            result.push(response);
+
+        }
+
+        return result;
+    }
+
+
+    /**
+     *
+     * @param board_id
+     * @param page
+     * @returns {Promise<Array>}
+     */
+    async getInvitesUserId(board_id, page = 1) {
+        return await this.invitesFor(board_id, page).then(function (response) {
+
+            var user_list = [];
+
+            /**
+             * @param {{invited_user:string}} invitesFor
+             */
+            var invitesFor = Object.values(response);
+            for (var userList in invitesFor) {
+                if (invitesFor.hasOwnProperty(userList)) {
+                    for (var user in invitesFor[userList]) {
+                        if (invitesFor[userList].hasOwnProperty(user)) {
+                            user_list.push({
+                                user_id: invitesFor[userList][user].invited_user.id,
+                                status: invitesFor[userList][user].status
+                            });
+                        }
+                    }
                 }
             }
-            else if (err.statusCode == 403) {
-                console.log("Warning invitesFor");
-                if (err.response.body != null) {
-                    console.log("Warning message : ", this.resourceResponse(response));
-                }
-            }
-            else {
-                console.log("Caught! Board invitesFor: ", err);
-            }
+            return user_list;
+
+
         });
 
 
     }
 
+
+    async followers(board_id, page = 1) {
+
+    }
 
 }
 

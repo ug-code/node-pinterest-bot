@@ -1,0 +1,6 @@
+class Pagination {
+
+    getBookmark(){
+
+    }
+}
