@@ -25,12 +25,42 @@ class PinCore {
     /**
      *
      * @param obj
+     * @param obj1
      */
-    log(obj) {
+    log(obj, obj1 = null) {
         if (this._config.debug) {
-            console.log(obj);
+            if (obj1 == null) {
+                console.log(obj);
+            } else {
+                console.log(obj, obj1);
+
+            }
         }
         return null;
+    }
+
+    /**
+     *
+     * @param ms
+     * @returns {Promise<any>}
+     */
+    waitFor(ms) {
+        return new Promise(r => setTimeout(r, ms))
+    }
+
+
+    /**
+     *
+     * @param user_active_date
+     * @returns {number}
+     */
+    static userActiveDate(user_active_date){
+
+        var cln_date         = new Date(user_active_date);
+        var date_now         = new Date();
+        var timeDiff         = Math.abs(cln_date.getTime() - date_now.getTime());
+
+        return Math.ceil(timeDiff / (1000 * 3600 * 24));
     }
 
     /**
