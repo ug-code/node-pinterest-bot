@@ -383,7 +383,6 @@ class Board extends PinCore {
 
         var followers = await this.followers(board_id, page);
 
-
         /**
          * @param {{invited_user:string}} invitesFor
          */
@@ -392,15 +391,25 @@ class Board extends PinCore {
         for (var follower_list in pagination_followers) {
             if (pagination_followers.hasOwnProperty(follower_list)) {
                 for (var user in pagination_followers[follower_list]) {
+
                     if (pagination_followers[follower_list].hasOwnProperty(user)) {
+                        var pagi_followers = pagination_followers[follower_list][user];
 
-                        var username          = pagination_followers[follower_list][user].username;
-                        var last_pin_save_day = Board.userActiveDate(pagination_followers[follower_list][user].last_pin_save_time);
-                        var follower_count    = pagination_followers[follower_list][user].follower_count;
-                        var id                = pagination_followers[follower_list][user].id;
-                        var board_count       = pagination_followers[follower_list][user].board_count;
-                        var pin_count         = pagination_followers[follower_list][user].pin_count;
+                        /**
+                         * @param {{last_pin_save_time:string}} pagi_followers
+                         * @param {{follower_count:string}} pagi_followers
+                         * @param {{board_count:string}} pagi_followers
+                         * @param {{pin_count:string}} pagi_followers
+                         * @param {{explicitly_followed_by_me:string}} pagi_followers
+                         */
 
+                        var username                  = pagi_followers.username;
+                        var last_pin_save_day         = Board.userActiveDate(pagi_followers.last_pin_save_time);
+                        var follower_count            = pagi_followers.follower_count;
+                        var id                        = pagi_followers.id;
+                        var board_count               = pagi_followers.board_count;
+                        var pin_count                 = pagi_followers.pin_count;
+                        var explicitly_followed_by_me = pagi_followers.explicitly_followed_by_me;
 
                         if (last_pin_save_day < LAST_PIN_SAVE_DAY_RULE
                             && follower_count > FOLLOWER_COUNT_RULE
@@ -414,7 +423,8 @@ class Board extends PinCore {
                                 follower_count: follower_count,
                                 id: id,
                                 board_count: board_count,
-                                pin_count: pin_count
+                                pin_count: pin_count,
+                                explicitly_followed_by_me: explicitly_followed_by_me
 
                             });
 
