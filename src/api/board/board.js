@@ -1,5 +1,5 @@
 var Auth    = require('../auth/auth');
-var PinCore = require('../pinCore');
+var PinCore = require('../core/pinCore');
 var rp      = require('request-promise');
 
 class Board extends PinCore {

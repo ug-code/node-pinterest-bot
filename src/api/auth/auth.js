@@ -1,4 +1,4 @@
-var PinCore = require('../pinCore');
+var PinCore = require('../core/pinCore');
 var rp      = require('request-promise');
 
 
