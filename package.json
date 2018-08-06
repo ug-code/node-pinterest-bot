@@ -7,6 +7,9 @@
     "request": "*",
     "request-promise": "*"
   },
+  "engines": {
+    "node": "8.9.4"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
