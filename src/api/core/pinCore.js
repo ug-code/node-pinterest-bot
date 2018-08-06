@@ -7,22 +7,35 @@ class PinCore {
      * @param options
      */
     constructor(options = {}) {
-        let defaults = {
+        let defaults     = {
             debug: false,
-            mail: 'strongMail',
-            username: "strongUsername",
-            password: "strongPass",
-
-
+            mail: '',
+            username: '',
+            password: '',
         };
-        this._config = Object.assign({}, defaults, options);
+        this._config     = Object.assign({}, defaults, options);
+        this._csrfToken  = null;
+        this._cookieJar  = null;
+        this._isLoggedIn = false;
+    }
+
+    set csrfToken(arg) {
+        this._csrfToken = arg;
+    }
+
+    set cookieJar(arg) {
+        this._cookieJar = arg;
+    }
+
+    set isLoggedIn(arg) {
+        this._isLoggedIn = arg;
     }
 
     get config() {
         return this._config;
     }
 
-   static async asyncForEach(array, callback) {
+    static async asyncForEach(array, callback) {
         for (let index = 0; index < array.length; index++) {
             await callback(array[index], index, array)
         }
@@ -62,11 +75,11 @@ class PinCore {
      * @param user_active_date
      * @returns {number}
      */
-    static userActiveDate(user_active_date){
+    static userActiveDate(user_active_date) {
 
-        var cln_date         = new Date(user_active_date);
-        var date_now         = new Date();
-        var timeDiff         = Math.abs(cln_date.getTime() - date_now.getTime());
+        var cln_date = new Date(user_active_date);
+        var date_now = new Date();
+        var timeDiff = Math.abs(cln_date.getTime() - date_now.getTime());
 
         return Math.ceil(timeDiff / (1000 * 3600 * 24));
     }
