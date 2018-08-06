@@ -21,6 +21,17 @@ class Auth extends PinCore {
         return this._csrfToken;
     }
 
+
+    /**
+     *
+     * @param username
+     * @param password
+     */
+     checkCredentials(username,password){
+        if (!username || !password) {
+            throw new Error('You must set username and password to login');
+        }
+    }
     /**
      *
      * @returns {Promise<void>}
