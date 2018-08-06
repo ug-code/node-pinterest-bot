@@ -38,11 +38,6 @@ class Board extends PinCore {
      */
     async create(params = {boardName: '', description: '', boardCategory: '', boardPrivacy: 'public'}) {
 
-        if (!this._isLoggedIn) {
-            await this.auth();
-        }
-
-
         let boardName     = params.boardName;
         let description   = params.description;
         let boardCategory = params.boardCategory;
@@ -151,9 +146,6 @@ class Board extends PinCore {
     async invitesFor(board_id, page = 1) {
 
         var limit = page * 20;
-        if (!this._isLoggedIn) {
-            await this.auth();
-        }
         this.log('invitesFor');
 
 
@@ -282,9 +274,6 @@ class Board extends PinCore {
     async followers(board_id = "61643157338625723", page = 1) {
 
         var limit = page * 50;
-        if (!this._isLoggedIn) {
-            await this.auth();
-        }
         this.log('followers');
 
 
