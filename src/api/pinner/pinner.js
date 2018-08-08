@@ -39,9 +39,6 @@ class Pinner extends PinCore {
      */
     async follow(user_id) {
 
-        if (!this._isLoggedIn) {
-            await this.auth();
-        }
         this.log('follow');
 
         let payload = {"options":{"user_id":user_id},"context":{}};
@@ -59,7 +56,7 @@ class Pinner extends PinCore {
             resolveWithFullResponse: true
 
         }).promise().bind(this).then(function (response) {
-            this.log('SUCCESS: follow');
+            this.log('SUCCESS: Pinner follow');
         }).catch(function (err) {
             /**
              *  @param {{resource_respons:array}} response
@@ -75,7 +72,7 @@ class Pinner extends PinCore {
                 }
             }
             else {
-                console.log("Caught! Board sendInvite: ", err);
+                console.log("Caught! Pinner follow: ", err);
             }
 
 
@@ -90,6 +87,45 @@ class Pinner extends PinCore {
      */
     async unFollow(user_id) {
 
+
+        this.log('unFollow');
+
+        let payload = {"options":{"user_id":user_id},"context":{}};
+        await  rp({
+            method: 'POST',
+            url: 'https://www.pinterest.com/resource/UserFollowResource/delete/',
+            headers: this.header(),
+            //gzip: true,
+            form: {
+                source_url: '',
+                data: JSON.stringify(payload)
+
+            },
+            jar: this._cookieJar,
+            resolveWithFullResponse: true
+
+        }).promise().bind(this).then(function (response) {
+            this.log('SUCCESS: Pinner unFollow');
+        }).catch(function (err) {
+            /**
+             *  @param {{resource_respons:array}} response
+             */
+            if (err.statusCode == 429) {
+                if (err.response.body != null) {
+                    console.log("unFollow spam message : ", JSON.parse(err.response.body).resource_response);
+                }
+            }
+            else if (err.statusCode == 403) {
+                if (err.response.body != null) {
+                    console.log("unFollow Warning  message : ", JSON.parse(err.response.body).resource_response);
+                }
+            }
+            else {
+                console.log("Caught! Pinner unFollow: ", err);
+            }
+
+
+        });
 
 
     }
