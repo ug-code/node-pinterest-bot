@@ -33,6 +33,26 @@ class Pinner extends PinCore {
 
 
     /**
+     * 
+     * @param user_id
+     * @param page
+     * @returns {Promise<void>}
+     */
+    async getFollowing(user_id , page = 1){
+
+    }
+
+    /**
+     *
+     * @param user_id
+     * @param page
+     * @returns {Promise<void>}
+     */
+    async getFollowers(user_id , page = 1){
+
+    }
+
+    /**
      *
      * @param user_id
      * @returns {Promise<void>}
