@@ -1,3 +1,4 @@
+const fs = require('fs');
 'use strict';
 
 class PinCore {
@@ -52,9 +53,11 @@ class PinCore {
         if (this._config.debug) {
             if (obj1 == null) {
                 console.log(obj);
+                fs.appendFileSync('plogs.txt', obj+'\r\n');
+
             } else {
                 console.log(obj, obj1);
-
+                fs.appendFileSync('plogs.txt', obj+" : "+obj1+'\r\n');
             }
         }
         return null;
